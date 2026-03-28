@@ -7,8 +7,10 @@
 #include <stddef.h>
 #include <multiboot2.h>
 #include <hal/hal.h>
+#include <hal/x86_64/pmap.h>
 #include <libkern/printf.h>
 #include <kern/task.h>
+#include <vm/pmm.h>
 
 void kmain(uint32_t magic, uint32_t info_ptr) {
     hal_early_console_init();
@@ -28,6 +30,8 @@ void kmain(uint32_t magic, uint32_t info_ptr) {
     kprintf("DANA: GDT and IDT loaded\n");
     kprintf("DANA: Multiboot2 info size = %u\n", info->total_size);
 
+    struct multiboot2_tag_mmap *mmap_tag = NULL;
+
     while (tag->type != MULTIBOOT2_TAG_TYPE_END) {
         switch (tag->type) {
             case MULTIBOOT2_TAG_TYPE_BASIC_MEMINFO: {
@@ -37,14 +41,22 @@ void kmain(uint32_t magic, uint32_t info_ptr) {
                 break;
             }
             case MULTIBOOT2_TAG_TYPE_MMAP: {
-                struct multiboot2_tag_mmap *m = (void *)tag;
-                int entries = (m->size - sizeof(*m)) / m->entry_size;
+                mmap_tag = (struct multiboot2_tag_mmap *)tag;
+                int entries = (int)((mmap_tag->size - sizeof(*mmap_tag)) / mmap_tag->entry_size);
                 kprintf("DANA: memory map has %d entries\n", entries);
                 break;
             }
         }
         tag = (void *)((uintptr_t)tag + ((tag->size + 7) & ~7));
     }
+
+    if (mmap_tag == NULL) {
+        kprintf("DANA: ERROR: no memory map from bootloader\n");
+        hal_halt();
+    }
+
+    pmm_init(mmap_tag);
+    pmap_init();
 
     kprintf("DANA: kernel task id = %u\n", kernel_task.task_id);
     kprintf("DANA: boot complete\n");

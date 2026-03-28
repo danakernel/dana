@@ -9,6 +9,12 @@
 #define MULTIBOOT2_TAG_TYPE_MMAP              6
 #define MULTIBOOT2_TAG_TYPE_BASIC_MEMINFO     4
 
+#define MULTIBOOT2_MEMORY_AVAILABLE           1
+#define MULTIBOOT2_MEMORY_RESERVED            2
+#define MULTIBOOT2_MEMORY_ACPI_RECLAIMABLE    3
+#define MULTIBOOT2_MEMORY_NVS                 4
+#define MULTIBOOT2_MEMORY_BADRAM              5
+
 struct multiboot2_tag {
     uint32_t type;
     uint32_t size;

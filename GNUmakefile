@@ -51,11 +51,13 @@ SRCS_C  := main.c \
            kern/ipc_port.c \
            libkern/string.c \
            libkern/printf.c \
+           vm/pmm.c \
            hal/$(HAL)/serial.c \
            hal/$(HAL)/vga.c \
            hal/$(HAL)/gdt.c \
            hal/$(HAL)/idt.c \
-           hal/$(HAL)/hal.c
+           hal/$(HAL)/hal.c \
+           hal/$(HAL)/pmap.c
 
 SRCS_S  := hal/$(HAL)/boot_entry.S
 
