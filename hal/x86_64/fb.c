@@ -164,7 +164,7 @@ static void draw_char(uint32_t col, uint32_t row, char c)
     for (int gy = 0; gy < FONT_H; gy++) {
         uint8_t row_bits = glyph[gy];
         for (int gx = 0; gx < FONT_W; gx++) {
-            uint32_t color = (row_bits & (0x80 >> gx)) ? FG : BG;
+            uint32_t color = (row_bits & (1 << gx)) ? FG : BG;
             put_pixel(px + gx, py + gy, color);
         }
     }
