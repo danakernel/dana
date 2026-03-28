@@ -52,6 +52,7 @@ SRCS_C  := main.c \
            libkern/string.c \
            libkern/printf.c \
            hal/$(HAL)/serial.c \
+           hal/$(HAL)/vga.c \
            hal/$(HAL)/gdt.c \
            hal/$(HAL)/idt.c \
            hal/$(HAL)/hal.c
