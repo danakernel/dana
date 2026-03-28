@@ -51,7 +51,7 @@ vm_fault_return_t vm_fault(vm_map_t map, vm_address_t addr, int fault_type)
     if (paddr == PMM_NULL)
         return VM_FAULT_OOM;
 
-    kmemset((void *)(uintptr_t)paddr, 0, PMM_PAGE_SIZE);
+    kmemset(PHYS_TO_VIRT(paddr), 0, PMM_PAGE_SIZE);
 
     if (pmap_map(map->pmap, page_addr, paddr, prot_to_pte(entry->prot)) != 0) {
         pmm_free_page(paddr);
