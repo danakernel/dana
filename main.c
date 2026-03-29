@@ -7,9 +7,12 @@
 #include <stddef.h>
 #include <limine.h>
 #include <hal/hal.h>
+#include <hal/x86_64/io.h>
 #include <hal/x86_64/pmap.h>
 #include <libkern/printf.h>
 #include <kern/task.h>
+#include <kern/sched.h>
+#include <kern/clock.h>
 #include <vm/pmm.h>
 #include <vm/vm_map.h>
 
@@ -117,7 +120,13 @@ void kmain(void) {
     vm_map_init();
 
     kprintf("DANA: kernel task id = %u\n", kernel_task.task_id);
+
+    sched_init();
+    clock_init();
+    sched_create_idle();
+
     kprintf("DANA: boot complete\n");
 
-    hal_halt();
+    cpu_enable_interrupts();
+    sched_idle();
 }

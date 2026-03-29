@@ -10,9 +10,12 @@
 #include <hal/x86_64/gdt.h>
 #include <hal/x86_64/io.h>
 #include <hal/x86_64/cpu.h>
+#include <hal/x86_64/pit.h>
+#include <hal/x86_64/pmap.h>
 #include <libkern/printf.h>
 #include <vm/vm_fault.h>
 #include <vm/vm_map.h>
+#include <kern/sched.h>
 #include <stdint.h>
 
 #define IDT_SIZE 256
@@ -144,7 +147,16 @@ DEFINE_ISR(26) DEFINE_ISR(27) DEFINE_ISR(28) DEFINE_ISR(29)
 DEFINE_ISR_ERR(30)
 DEFINE_ISR(31)
 
+static void __attribute__((interrupt))
+irq_0(struct interrupt_frame *frame)
+{
+    (void)frame;
+    pit_increment_tick();
+    thread_yield();
+}
+
 #define GATE_INT 0x8e
+#define IRQ_BASE 32
 
 void idt_init(void) {
     idt_set(0,  (uint64_t)isr_0,  GATE_INT);
@@ -179,6 +191,7 @@ void idt_init(void) {
     idt_set(29, (uint64_t)isr_29, GATE_INT);
     idt_set(30, (uint64_t)isr_30, GATE_INT);
     idt_set(31, (uint64_t)isr_31, GATE_INT);
+    idt_set(IRQ_BASE + 0, (uint64_t)irq_0, GATE_INT);
 
     struct idtr idtr = {
         .limit = sizeof(idt) - 1,

@@ -49,6 +49,7 @@ SRCS_C  := main.c \
            kern/task.c \
            kern/thread.c \
            kern/sched.c \
+           kern/clock.c \
            kern/ipc_port.c \
            libkern/string.c \
            libkern/printf.c \
@@ -63,7 +64,8 @@ SRCS_C  := main.c \
            hal/$(HAL)/idt.c \
            hal/$(HAL)/hal.c \
            hal/$(HAL)/pmap.c \
-           hal/$(HAL)/cpu.c
+           hal/$(HAL)/cpu.c \
+           hal/$(HAL)/pit.c
 
 SRCS_S  := hal/$(HAL)/boot_entry.S \
            hal/$(HAL)/thread_switch.S

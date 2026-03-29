@@ -31,6 +31,8 @@ void hal_console_putc(char c) {
 }
 
 void hal_init(void) {
+    cpu_init();
+    cpu_init_self(0);
     gdt_init();
     gdt_load_tss();
     idt_init();
