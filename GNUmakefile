@@ -48,6 +48,7 @@ OVMF        := /usr/share/edk2/x64/OVMF.4m.fd
 SRCS_C  := main.c \
            kern/task.c \
            kern/thread.c \
+           kern/sched.c \
            kern/ipc_port.c \
            libkern/string.c \
            libkern/printf.c \

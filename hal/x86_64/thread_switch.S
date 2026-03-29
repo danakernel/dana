@@ -13,11 +13,15 @@
 ; thread_trampoline
 ;   Entry point for a thread's first run (jumped to via ret).
 ;   r15 = entry function pointer, r14 = argument (void *).
+;
+; machine_halt
+;   Halt the CPU until the next interrupt (cli; hlt).
 
 bits 64
 
 global machine_switch_context
 global thread_trampoline
+global machine_halt
 
 machine_switch_context:
     push    rbp
@@ -47,3 +51,8 @@ thread_trampoline:
     cli
     hlt
     jmp     .spin
+
+machine_halt:
+    cli
+    hlt
+    ret

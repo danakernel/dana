@@ -12,7 +12,8 @@
 
 #include <kern/kern_types.h>
 
-/* Saved kernel stack pointer — everything else is on the stack itself. */
+struct thread_sched;
+
 struct thread_saved_state {
     uint64_t rsp;
 };
@@ -26,6 +27,7 @@ struct thread {
     ipc_port_t                ith_self;
     uint64_t                  kernel_stack_phys;
     uint64_t                  kernel_stack_top;
+    struct thread_sched       sched;
 };
 
 kern_return_t thread_create(task_t task, void (*entry)(void *), void *arg,

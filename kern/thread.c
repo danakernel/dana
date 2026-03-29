@@ -19,6 +19,7 @@
  *   kernel_stack_top - 64  r15 = entry fn      <- saved_state.rsp points here
  */
 
+#include <kern/sched.h>
 #include <kern/thread.h>
 #include <kern/task.h>
 #include <vm/zalloc.h>
@@ -63,6 +64,10 @@ kern_return_t thread_create(task_t task, void (*entry)(void *), void *arg,
     t->ith_self          = IPC_PORT_NULL;
     t->kernel_stack_phys = stack_phys;
     t->kernel_stack_top  = (uint64_t)(uintptr_t)PHYS_TO_VIRT(stack_phys) + KSTACK_SIZE;
+    t->sched.state       = THREAD_STATE_RUNNABLE;
+    t->sched.next        = THREAD_NULL;
+    t->sched.prev        = THREAD_NULL;
+    t->sched.run_time    = 0;
 
     uint64_t *sp = (uint64_t *)t->kernel_stack_top;
     *--sp = 0;                           /* guard word */
@@ -82,6 +87,7 @@ kern_return_t thread_create(task_t task, void (*entry)(void *), void *arg,
         task->thread_count++;
     }
 
+    sched_enqueue(t);
     *thread_out = t;
     return KERN_SUCCESS;
 }
@@ -92,6 +98,8 @@ kern_return_t thread_destroy(thread_t t)
         return KERN_INVALID_ARGUMENT;
     if (--t->ref_count > 0)
         return KERN_SUCCESS;
+
+    sched_dequeue(t);
 
     if (t->kernel_stack_phys)
         pmm_free_page(t->kernel_stack_phys);

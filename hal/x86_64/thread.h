@@ -22,4 +22,7 @@ void thread_trampoline(void);
 /* Update TSS.rsp0 so the CPU uses the correct kernel stack on ring-0 entry. */
 void machine_set_rsp0(uint64_t rsp0);
 
+/* Halt the CPU until the next interrupt. */
+void machine_halt(void);
+
 #endif /* HAL_X86_64_THREAD_H */
