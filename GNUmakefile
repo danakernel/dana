@@ -62,7 +62,8 @@ SRCS_C  := main.c \
            hal/$(HAL)/gdt.c \
            hal/$(HAL)/idt.c \
            hal/$(HAL)/hal.c \
-           hal/$(HAL)/pmap.c
+           hal/$(HAL)/pmap.c \
+           hal/$(HAL)/cpu.c
 
 SRCS_S  := hal/$(HAL)/boot_entry.S \
            hal/$(HAL)/thread_switch.S

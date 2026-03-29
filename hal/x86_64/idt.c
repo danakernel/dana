@@ -8,6 +8,7 @@
 
 #include <hal/x86_64/idt.h>
 #include <hal/x86_64/gdt.h>
+#include <hal/x86_64/io.h>
 #include <hal/x86_64/cpu.h>
 #include <libkern/printf.h>
 #include <vm/vm_fault.h>

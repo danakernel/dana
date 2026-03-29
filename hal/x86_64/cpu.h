@@ -1,4 +1,4 @@
-/* hal/x86_64/cpu.h - x86_64 CPU primitives
+/* hal/x86_64/cpu.h - Per-CPU data structure for x86_64
  * Copyright (C) 2026 AnmiTaliDev <anmitalidev@nuros.org>
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -7,57 +7,34 @@
 #define HAL_X86_64_CPU_H
 
 #include <stdint.h>
+#include <stddef.h>
 
-static inline void cpu_halt(void) {
-    __asm__ volatile ("hlt");
-}
+struct thread;
 
-static inline void cpu_pause(void) {
-    __asm__ volatile ("pause");
-}
+#define MAX_CPUS    8
 
-static inline void cpu_disable_interrupts(void) {
-    __asm__ volatile ("cli");
-}
+struct cpu_data {
+    struct thread   *cpu_current_thread;
+    struct thread   *cpu_idle_thread;
+    uint32_t        cpu_id;
+    uint32_t        cpu_number;
+    uint64_t        cpu_stack_top;
+    uint64_t        cpu_tss_rsp0;
+    volatile int    cpu_active;
+    uint64_t        cpu_ticks;
+};
 
-static inline void cpu_enable_interrupts(void) {
-    __asm__ volatile ("sti");
-}
+void cpu_init(void);
+void cpu_init_self(uint32_t cpu_id);
+struct cpu_data *cpu_get(void);
+uint32_t cpu_number(void);
+struct thread *cpu_current_thread(void);
+void cpu_set_current_thread(struct thread *thread);
+struct thread *cpu_idle_thread(void);
+void cpu_set_idle_thread(struct thread *thread);
+int cpu_is_boot_cpu(void);
+void cpu_halt(void);
 
-static inline uint64_t cpu_read_cr0(void) {
-    uint64_t val;
-    __asm__ volatile ("mov %%cr0, %0" : "=r"(val));
-    return val;
-}
-
-static inline uint64_t cpu_read_cr2(void) {
-    uint64_t val;
-    __asm__ volatile ("mov %%cr2, %0" : "=r"(val));
-    return val;
-}
-
-static inline uint64_t cpu_read_cr3(void) {
-    uint64_t val;
-    __asm__ volatile ("mov %%cr3, %0" : "=r"(val));
-    return val;
-}
-
-static inline void cpu_write_cr3(uint64_t val) {
-    __asm__ volatile ("mov %0, %%cr3" : : "r"(val) : "memory");
-}
-
-static inline void cpu_outb(uint16_t port, uint8_t val) {
-    __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
-}
-
-static inline uint8_t cpu_inb(uint16_t port) {
-    uint8_t val;
-    __asm__ volatile ("inb %1, %0" : "=a"(val) : "Nd"(port));
-    return val;
-}
-
-static inline void cpu_io_wait(void) {
-    cpu_outb(0x80, 0);
-}
+extern struct cpu_data *cpu_data_ptr;
 
 #endif /* HAL_X86_64_CPU_H */

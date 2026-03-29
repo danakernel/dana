@@ -46,5 +46,6 @@ void sched_set_state(struct thread *thread, enum thread_state state);
 enum thread_state sched_get_state(struct thread *thread);
 void sched_idle(void);
 void sched_run(void);
+kern_return_t sched_create_idle(void);
 
 #endif /* KERN_SCHED_H */

@@ -4,7 +4,7 @@
  */
 
 #include <hal/x86_64/vga.h>
-#include <hal/x86_64/cpu.h>
+#include <hal/x86_64/io.h>
 
 #define VGA_BUF ((volatile uint16_t *)0xb8000)
 

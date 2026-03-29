@@ -6,6 +6,7 @@
  */
 
 #include <hal/hal.h>
+#include <hal/x86_64/io.h>
 #include <hal/x86_64/serial.h>
 #include <hal/x86_64/vga.h>
 #include <hal/x86_64/fb.h>

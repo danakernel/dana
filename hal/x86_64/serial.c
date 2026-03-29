@@ -4,7 +4,7 @@
  */
 
 #include <hal/x86_64/serial.h>
-#include <hal/x86_64/cpu.h>
+#include <hal/x86_64/io.h>
 
 #define COM1 0x3f8
 

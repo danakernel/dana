@@ -6,19 +6,16 @@
 #include <kern/sched.h>
 #include <kern/thread.h>
 #include <kern/task.h>
+#include <hal/x86_64/cpu.h>
 #include <hal/thread.h>
 
 static struct sched_runqueue runqueue;
-static thread_t current_thread;
-static thread_t idle_thread;
 
 void sched_init(void)
 {
     runqueue.head = THREAD_NULL;
     runqueue.tail = THREAD_NULL;
     runqueue.count = 0;
-    current_thread = THREAD_NULL;
-    idle_thread = THREAD_NULL;
 }
 
 kern_return_t sched_enqueue(thread_t thread)
@@ -67,8 +64,9 @@ thread_t sched_choose(void)
     if (runqueue.head != THREAD_NULL)
         return runqueue.head;
 
-    if (idle_thread != THREAD_NULL)
-        return idle_thread;
+    thread_t idle = cpu_idle_thread();
+    if (idle != THREAD_NULL)
+        return idle;
 
     return THREAD_NULL;
 }
@@ -89,7 +87,7 @@ enum thread_state sched_get_state(thread_t thread)
 
 thread_t sched_current(void)
 {
-    return current_thread;
+    return cpu_current_thread();
 }
 
 void sched_block(thread_t thread)
@@ -113,8 +111,9 @@ void sched_unblock(thread_t thread)
 void thread_yield(void)
 {
     thread_t next = sched_choose();
+    thread_t current = cpu_current_thread();
 
-    if (next != THREAD_NULL && next != current_thread) {
+    if (next != THREAD_NULL && next != current) {
         sched_run();
     }
 }
@@ -123,11 +122,12 @@ void sched_idle(void)
 {
     for (;;) {
         thread_t next = sched_choose();
+        thread_t current = cpu_current_thread();
 
-        if (next != THREAD_NULL && next != current_thread) {
+        if (next != THREAD_NULL && next != current) {
             sched_run();
         } else {
-            machine_halt();
+            cpu_halt();
         }
     }
 }
@@ -135,13 +135,14 @@ void sched_idle(void)
 void sched_run(void)
 {
     thread_t next = sched_choose();
+    thread_t current = cpu_current_thread();
 
-    if (next == THREAD_NULL || next == current_thread)
+    if (next == THREAD_NULL || next == current)
         return;
 
-    if (current_thread != THREAD_NULL) {
-        if (current_thread->sched.state == THREAD_STATE_RUNNING)
-            sched_set_state(current_thread, THREAD_STATE_RUNNABLE);
+    if (current != THREAD_NULL) {
+        if (current->sched.state == THREAD_STATE_RUNNING)
+            sched_set_state(current, THREAD_STATE_RUNNABLE);
     }
 
     sched_set_state(next, THREAD_STATE_RUNNING);
@@ -152,8 +153,29 @@ void sched_run(void)
         sched_enqueue(next);
     }
 
-    thread_t old = current_thread;
-    current_thread = next;
+    cpu_set_current_thread(next);
 
-    thread_switch(old, next);
+    thread_switch(current, next);
+}
+
+static void idle_thread_entry(void *arg)
+{
+    (void)arg;
+    sched_idle();
+}
+
+kern_return_t sched_create_idle(void)
+{
+    thread_t idle;
+    kern_return_t kr;
+
+    kr = thread_create(TASK_NULL, idle_thread_entry, THREAD_NULL, &idle);
+    if (kr != KERN_SUCCESS)
+        return kr;
+
+    cpu_set_idle_thread(idle);
+    cpu_set_current_thread(idle);
+    sched_set_state(idle, THREAD_STATE_RUNNING);
+
+    return KERN_SUCCESS;
 }
