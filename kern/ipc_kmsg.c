@@ -74,14 +74,16 @@ kern_return_t ipc_kmsg_copyout(struct ipc_kmsg *kmsg, struct mach_msg_header *us
     if (kmsg == IPC_KMSG_NULL || (void *)user_msg == (void *)ZONE_NULL || (void *)size == (void *)ZONE_NULL)
         return KERN_INVALID_ARGUMENT;
 
-    *user_msg = kmsg->ikm_header;
-
-    mach_msg_size_t total_size = kmsg->ikm_header_size + kmsg->ikm_size;
-    if (total_size > *size)
+    if (kmsg->ikm_size > *size)
         return KERN_NO_SPACE;
 
-    kmemcpy((uint8_t *)user_msg + sizeof(struct mach_msg_header), kmsg->ikm_data, kmsg->ikm_size);
-    *size = total_size;
+    *user_msg = kmsg->ikm_header;
+
+    mach_msg_size_t data_size = kmsg->ikm_size - sizeof(struct mach_msg_header);
+    if (data_size > 0)
+        kmemcpy((uint8_t *)user_msg + sizeof(struct mach_msg_header), kmsg->ikm_data, data_size);
+
+    *size = kmsg->ikm_size;
 
     return KERN_SUCCESS;
 }

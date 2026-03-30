@@ -7,7 +7,11 @@
 #include <kern/macho.h>
 #include <kern/task.h>
 #include <vm/vm_map.h>
+#include <hal/pmap.h>
 #include <libkern/printf.h>
+
+#define USER_MAP_MIN  0x0000000000001000ULL
+#define USER_MAP_MAX  0x00007fffffffffffULL
 
 kern_return_t exec_load(task_t task, const void *image_data, size_t image_size,
                         uint64_t *entry_point)
@@ -15,8 +19,19 @@ kern_return_t exec_load(task_t task, const void *image_data, size_t image_size,
     if (task == TASK_NULL || (void *)image_data == (void *)0 || (void *)entry_point == (void *)0)
         return KERN_INVALID_ARGUMENT;
 
+    if (task->map == VM_MAP_NULL) {
+        pmap_t *pmap = pmap_create();
+        if (pmap == (void *)0)
+            return KERN_NO_SPACE;
+        task->map = vm_map_create(pmap, USER_MAP_MIN, USER_MAP_MAX);
+        if (task->map == VM_MAP_NULL) {
+            pmap_destroy(pmap);
+            return KERN_NO_SPACE;
+        }
+    }
+
     struct macho_image macho;
-    kern_return_t kr = macho_load(image_data, image_size, &macho);
+    kern_return_t kr = macho_load(task->map, image_data, image_size, &macho);
     if (kr != KERN_SUCCESS) {
         kprintf("EXEC: macho_load failed: %d\n", kr);
         return kr;

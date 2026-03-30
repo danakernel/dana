@@ -35,11 +35,9 @@ static kern_return_t sys_thread_create_wrapper(uint64_t arg1, uint64_t arg2,
                                                 uint64_t arg5, uint64_t arg6)
 {
     (void)arg2;
-    (void)arg3;
-    (void)arg4;
     (void)arg5;
     (void)arg6;
-    
+
     task_t task = (task_t)arg1;
     thread_t thread;
     kern_return_t kr = thread_create(task, (void (*)(void *))arg3, (void *)arg4, &thread);
@@ -68,16 +66,15 @@ static kern_return_t sys_exec_wrapper(uint64_t arg1, uint64_t arg2,
                                        uint64_t arg3, uint64_t arg4,
                                        uint64_t arg5, uint64_t arg6)
 {
-    (void)arg3;
     (void)arg4;
     (void)arg5;
     (void)arg6;
-    
+
     task_t task = (task_t)arg1;
     const void *image = (const void *)arg2;
-    size_t size = (size_t)arg4;
+    size_t size = (size_t)arg3;
     uint64_t entry;
-    
+
     return exec_load(task, image, size, &entry);
 }
 

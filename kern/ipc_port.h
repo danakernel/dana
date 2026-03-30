@@ -23,6 +23,8 @@ typedef enum {
 
 #define IPC_PORT_QUEUE_MAX 32
 
+struct thread;
+
 struct ipc_port {
     mach_port_name_t  ip_name;
     ipc_port_type_t   ip_type;
@@ -30,6 +32,7 @@ struct ipc_port {
     uint32_t          ip_mscount;
     uint32_t          ip_srights;
     void             *ip_kobject;
+    struct thread    *ip_waiting_thread;
     struct ipc_kmsg  *ip_messages[IPC_PORT_QUEUE_MAX];
     uint32_t          ip_msg_count;
     uint32_t          ip_msg_first;

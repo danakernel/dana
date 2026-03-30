@@ -28,7 +28,7 @@ static kern_return_t macho_validate(struct mach_header_64 *header)
     return KERN_SUCCESS;
 }
 
-static kern_return_t macho_parse_segments(struct mach_header_64 *header,
+static kern_return_t macho_parse_segments(vm_map_t map, struct mach_header_64 *header,
                                           const void *image_data,
                                           struct macho_image *image)
 {
@@ -39,7 +39,7 @@ static kern_return_t macho_parse_segments(struct mach_header_64 *header,
         if (lc->cmd == LC_SEGMENT_64) {
             struct segment_command_64 *seg = (struct segment_command_64 *)lc;
 
-            if (seg->filesize > 0) {
+            if (seg->vmsize > 0) {
                 vm_address_t addr = seg->vmaddr;
                 vm_size_t size = seg->vmsize;
                 vm_prot_t prot = 0;
@@ -51,16 +51,20 @@ static kern_return_t macho_parse_segments(struct mach_header_64 *header,
                 if (seg->initprot & VM_PROT_EXECUTE)
                     prot |= VM_PROT_EXECUTE;
 
-                kr = vm_map_page_range(kernel_map, addr, size, prot);
+                kr = vm_map_page_range(map, addr, size, prot);
                 if (kr != KERN_SUCCESS)
                     return kr;
 
-                const void *src = (const uint8_t *)image_data + seg->fileoff;
-                void *dst = (void *)(uintptr_t)addr;
-                kmemcpy(dst, src, seg->filesize);
+                if (seg->fileoff == 0 && image->base_address == 0)
+                    image->base_address = seg->vmaddr;
 
-                if (seg->vmsize > seg->filesize) {
-                    kmemset((uint8_t *)dst + seg->filesize, 0, seg->vmsize - seg->filesize);
+                if (seg->filesize > 0) {
+                    const void *src = (const uint8_t *)image_data + seg->fileoff;
+                    void *dst = (void *)(uintptr_t)addr;
+                    kmemcpy(dst, src, seg->filesize);
+
+                    if (seg->vmsize > seg->filesize)
+                        kmemset((uint8_t *)dst + seg->filesize, 0, seg->vmsize - seg->filesize);
                 }
             }
         }
@@ -79,7 +83,7 @@ static kern_return_t macho_find_entry(struct mach_header_64 *header,
     for (uint32_t i = 0; i < header->ncmds; i++) {
         if (lc->cmd == LC_MAIN) {
             struct entry_point_command *ep = (struct entry_point_command *)lc;
-            image->entry_point = ep->entryoff;
+            image->entry_point = image->base_address + ep->entryoff;
             return KERN_SUCCESS;
         }
 
@@ -90,10 +94,10 @@ static kern_return_t macho_find_entry(struct mach_header_64 *header,
     return KERN_SUCCESS;
 }
 
-kern_return_t macho_load(const void *image_data, size_t image_size,
+kern_return_t macho_load(vm_map_t map, const void *image_data, size_t image_size,
                          struct macho_image *image_out)
 {
-    if ((void *)image_data == (void *)0 || (void *)image_out == (void *)0)
+    if (map == VM_MAP_NULL || (void *)image_data == (void *)0 || (void *)image_out == (void *)0)
         return KERN_INVALID_ARGUMENT;
 
     if (image_size < sizeof(struct mach_header_64))
@@ -109,7 +113,7 @@ kern_return_t macho_load(const void *image_data, size_t image_size,
     image_out->size = image_size;
     image_out->base_address = 0;
 
-    kr = macho_parse_segments(header, image_data, image_out);
+    kr = macho_parse_segments(map, header, image_data, image_out);
     if (kr != KERN_SUCCESS)
         return kr;
 

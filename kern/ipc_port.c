@@ -5,6 +5,7 @@
 
 #include <kern/ipc_port.h>
 #include <kern/ipc_kmsg.h>
+#include <kern/sched.h>
 #include <vm/zalloc.h>
 #include <libkern/string.h>
 
@@ -63,6 +64,12 @@ kern_return_t ipc_port_enqueue(ipc_port_t port, struct ipc_kmsg *kmsg)
     port->ip_messages[port->ip_msg_last] = kmsg;
     port->ip_msg_last = (port->ip_msg_last + 1) % IPC_PORT_QUEUE_MAX;
     port->ip_msg_count++;
+
+    if (port->ip_waiting_thread != NULL) {
+        thread_t waiter = port->ip_waiting_thread;
+        port->ip_waiting_thread = NULL;
+        sched_unblock(waiter);
+    }
 
     return KERN_SUCCESS;
 }

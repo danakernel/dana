@@ -54,10 +54,10 @@ kern_return_t ipc_space_insert(struct ipc_space *space, ipc_port_t port,
     if (space->is_port_count >= IPC_SPACE_MAX_PORTS)
         return KERN_NO_SPACE;
 
-    mach_port_t name = space->is_port_count;
-    space->is_entries[name].ie_port = port;
-    space->is_entries[name].ie_name = name;
-    space->is_entries[name].ie_rights = 1;
+    mach_port_t name = space->is_port_count + 1;
+    space->is_entries[space->is_port_count].ie_port = port;
+    space->is_entries[space->is_port_count].ie_name = name;
+    space->is_entries[space->is_port_count].ie_rights = 1;
     space->is_port_count++;
 
     *name_out = name;
@@ -70,10 +70,10 @@ kern_return_t ipc_space_lookup(struct ipc_space *space, mach_port_t name,
     if ((void *)space == (void *)ZONE_NULL || (void *)port_out == (void *)ZONE_NULL)
         return KERN_INVALID_ARGUMENT;
 
-    if (name >= space->is_port_count)
+    if (name == MACH_PORT_NULL || name > space->is_port_count)
         return KERN_INVALID_ARGUMENT;
 
-    struct ipc_entry *entry = &space->is_entries[name];
+    struct ipc_entry *entry = &space->is_entries[name - 1];
     if (entry->ie_port == IPC_PORT_NULL)
         return KERN_INVALID_ARGUMENT;
 
@@ -86,10 +86,10 @@ kern_return_t ipc_space_remove(struct ipc_space *space, mach_port_t name)
     if ((void *)space == (void *)ZONE_NULL)
         return KERN_INVALID_ARGUMENT;
 
-    if (name >= space->is_port_count)
+    if (name == MACH_PORT_NULL || name > space->is_port_count)
         return KERN_INVALID_ARGUMENT;
 
-    struct ipc_entry *entry = &space->is_entries[name];
+    struct ipc_entry *entry = &space->is_entries[name - 1];
     if (entry->ie_port != IPC_PORT_NULL) {
         ipc_port_release(entry->ie_port);
         entry->ie_port = IPC_PORT_NULL;

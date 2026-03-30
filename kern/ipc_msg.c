@@ -71,8 +71,11 @@ kern_return_t mach_msg_receive(struct mach_msg_header *msg, mach_msg_size_t *siz
 
     if (port->ip_msg_count == 0) {
         thread_t thread = sched_current();
+        port->ip_waiting_thread = thread;
         sched_block(thread);
-        return KERN_SUCCESS;
+        sched_run();
+        if (port->ip_msg_count == 0)
+            return KERN_FAILURE;
     }
 
     struct ipc_kmsg *kmsg = ipc_port_dequeue(port);

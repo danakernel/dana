@@ -10,6 +10,7 @@
 #define KERN_MACHO_H
 
 #include <kern/kern_types.h>
+#include <vm/vm_map.h>
 #include <vm/vm_types.h>
 #include <stdint.h>
 
@@ -31,7 +32,7 @@
 #define LC_SEGMENT_64       0x19
 #define LC_LOAD_DYLIB       0xc
 #define LC_LOAD_DYLINKER    0xe
-#define LC_UNIXTHREAD       0x19
+#define LC_UNIXTHREAD       0x05
 #define LC_MAIN             0x80000028
 
 struct mach_header_64 {
@@ -100,7 +101,7 @@ struct macho_image {
     uint64_t              size;
 };
 
-kern_return_t macho_load(const void *image_data, size_t image_size,
+kern_return_t macho_load(vm_map_t map, const void *image_data, size_t image_size,
                          struct macho_image *image_out);
 kern_return_t macho_unload(struct macho_image *image);
 
