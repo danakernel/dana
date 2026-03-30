@@ -49,6 +49,13 @@ kern_return_t        vm_map_enter(vm_map_t map,
 kern_return_t        vm_map_remove(vm_map_t map,
                                    vm_address_t start, vm_size_t size);
 
+kern_return_t        vm_map_page_range(vm_map_t map,
+                                       vm_address_t start, vm_size_t size,
+                                       vm_prot_t prot);
+
+kern_return_t        vm_deallocate(vm_map_t map,
+                                   vm_address_t start, vm_size_t size);
+
 struct vm_map_entry *vm_map_lookup_entry(vm_map_t map, vm_address_t addr);
 
 #endif /* VM_VM_MAP_H */

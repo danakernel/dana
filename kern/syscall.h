@@ -20,6 +20,7 @@ struct mach_msg_header;
 #define SYSCALL_TASK_CREATE     4
 #define SYSCALL_VM_ALLOCATE     5
 #define SYSCALL_VM_DEALLOCATE   6
+#define SYSCALL_EXEC            7
 
 void syscall_init(void);
 kern_return_t syscall_mach_msg(struct mach_msg_header *msg,

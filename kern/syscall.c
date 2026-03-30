@@ -8,6 +8,7 @@
 #include <kern/sched.h>
 #include <kern/thread.h>
 #include <kern/task.h>
+#include <kern/exec.h>
 #include <vm/zalloc.h>
 #include <libkern/printf.h>
 
@@ -63,6 +64,23 @@ static kern_return_t sys_thread_exit_wrapper(uint64_t arg1, uint64_t arg2,
     return KERN_SUCCESS;
 }
 
+static kern_return_t sys_exec_wrapper(uint64_t arg1, uint64_t arg2,
+                                       uint64_t arg3, uint64_t arg4,
+                                       uint64_t arg5, uint64_t arg6)
+{
+    (void)arg3;
+    (void)arg4;
+    (void)arg5;
+    (void)arg6;
+    
+    task_t task = (task_t)arg1;
+    const void *image = (const void *)arg2;
+    size_t size = (size_t)arg4;
+    uint64_t entry;
+    
+    return exec_load(task, image, size, &entry);
+}
+
 void syscall_init(void)
 {
     for (int i = 0; i < MAX_SYSCALL; i++) {
@@ -72,6 +90,7 @@ void syscall_init(void)
     syscall_table[SYSCALL_MACH_MSG] = sys_mach_msg_wrapper;
     syscall_table[SYSCALL_THREAD_CREATE] = sys_thread_create_wrapper;
     syscall_table[SYSCALL_THREAD_EXIT] = sys_thread_exit_wrapper;
+    syscall_table[SYSCALL_EXEC] = sys_exec_wrapper;
     
     kprintf("DANA: syscall table initialized\n");
 }

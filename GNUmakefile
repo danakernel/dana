@@ -55,6 +55,8 @@ SRCS_C  := main.c \
            kern/ipc_space.c \
            kern/ipc_msg.c \
            kern/syscall.c \
+           kern/macho.c \
+           kern/exec.c \
            libkern/string.c \
            libkern/printf.c \
            vm/pmm.c \

@@ -180,6 +180,42 @@ kern_return_t vm_map_enter(vm_map_t map,
     return KERN_SUCCESS;
 }
 
+kern_return_t vm_map_page_range(vm_map_t map,
+                                 vm_address_t start, vm_size_t size,
+                                 vm_prot_t prot)
+{
+    if (size == 0 || start < map->min_offset)
+        return KERN_INVALID_ARGUMENT;
+
+    vm_address_t end = start + size;
+    if (end > map->max_offset || end < start)
+        return KERN_INVALID_ARGUMENT;
+
+    uint64_t pte_flags = prot_to_pte(prot);
+
+    for (vm_address_t a = start; a < end; a += PMM_PAGE_SIZE) {
+        uint64_t pa = pmm_alloc_page();
+        if (pa == PMM_NULL) {
+            vm_map_remove(map, start, a - start);
+            return KERN_NO_SPACE;
+        }
+        kmemset(PHYS_TO_VIRT(pa), 0, PMM_PAGE_SIZE);
+        if (pmap_map(map->pmap, a, pa, pte_flags) != 0) {
+            pmm_free_page(pa);
+            vm_map_remove(map, start, a - start);
+            return KERN_NO_SPACE;
+        }
+    }
+
+    return KERN_SUCCESS;
+}
+
+kern_return_t vm_deallocate(vm_map_t map,
+                             vm_address_t start, vm_size_t size)
+{
+    return vm_map_remove(map, start, size);
+}
+
 kern_return_t vm_map_remove(vm_map_t map,
                              vm_address_t start, vm_size_t size)
 {
