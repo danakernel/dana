@@ -14,6 +14,9 @@
 #include <hal/x86_64/idt.h>
 #include <hal/x86_64/cpu.h>
 #include <hal/x86_64/thread.h>
+#include <hal/x86_64/msr.h>
+#include <hal/x86_64/syscall.h>
+#include <kern/syscall.h>
 
 void hal_early_console_init(void) {
     serial_init();
@@ -36,6 +39,8 @@ void hal_init(void) {
     gdt_init();
     gdt_load_tss();
     idt_init();
+    syscall_arch_init();
+    syscall_init();
 }
 
 void hal_halt(void) {

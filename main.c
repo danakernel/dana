@@ -13,6 +13,7 @@
 #include <kern/task.h>
 #include <kern/sched.h>
 #include <kern/clock.h>
+#include <kern/syscall.h>
 #include <vm/pmm.h>
 #include <vm/vm_map.h>
 

@@ -3,7 +3,7 @@
 DANA (Dana is Almost Not Apple) is a Mach microkernel targeting Darwin/XNU ABI
 compatibility. 
 
-## Phase 1 — Bootable Skeleton (current)
+## Phase 1 — Bootable Skeleton
 
 - Limine boot protocol handoff (x86\_64 HAL)
 - HAL interface (`hal/hal.h`) isolating kernel from platform
@@ -49,10 +49,8 @@ Key functions: `mach_msg_send()`, `mach_msg_receive()`, `ipc_kmsg_get()`
 
 - x86\_64 `syscall`/`sysret` entry via LSTAR MSR
 - Mach trap table matching XNU negative syscall numbering
-- ELF64 loader for the initial server task
-- Bootstrap server as first userspace process
 
-## Phase 6 — Darwin ABI Compatibility
+## Phase 6 — Darwin ABI Compatibility (current)
 
 - Mach-O 64-bit binary loader (`LC_SEGMENT_64`, `LC_UNIXTHREAD`)
 - BSD personality layer over Mach (task = BSD process)

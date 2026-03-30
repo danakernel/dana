@@ -54,6 +54,7 @@ SRCS_C  := main.c \
            kern/ipc_kmsg.c \
            kern/ipc_space.c \
            kern/ipc_msg.c \
+           kern/syscall.c \
            libkern/string.c \
            libkern/printf.c \
            vm/pmm.c \
@@ -68,10 +69,12 @@ SRCS_C  := main.c \
            hal/$(HAL)/hal.c \
            hal/$(HAL)/pmap.c \
            hal/$(HAL)/cpu.c \
-           hal/$(HAL)/pit.c
+           hal/$(HAL)/pit.c \
+           hal/$(HAL)/syscall_setup.c
 
 SRCS_S  := hal/$(HAL)/boot_entry.S \
-           hal/$(HAL)/thread_switch.S
+           hal/$(HAL)/thread_switch.S \
+           hal/$(HAL)/syscall.S
 
 OBJS    := $(patsubst %.c, $(BUILD)/%.o, $(SRCS_C)) \
            $(patsubst %.S, $(BUILD)/%.o, $(SRCS_S))
