@@ -11,13 +11,16 @@
 
 #include <kern/kern_types.h>
 
+struct ipc_space;
+
 struct task {
-    uint32_t    task_id;
-    uint32_t    ref_count;
-    vm_map_t    map;
-    thread_t    threads;
-    ipc_port_t  itk_self;
-    uint32_t    thread_count;
+    uint32_t        task_id;
+    uint32_t        ref_count;
+    vm_map_t        map;
+    thread_t        threads;
+    ipc_port_t      itk_self;
+    uint32_t        thread_count;
+    struct ipc_space *itk_space;
 };
 
 kern_return_t task_create(task_t parent, bool inherit_memory, task_t *child_out);

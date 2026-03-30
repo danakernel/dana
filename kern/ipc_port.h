@@ -12,12 +12,16 @@
 
 #include <kern/kern_types.h>
 
+struct ipc_kmsg;
+
 typedef enum {
     IPC_PORT_TYPE_NONE    = 0,
     IPC_PORT_TYPE_SEND    = 1,
     IPC_PORT_TYPE_RECEIVE = 2,
     IPC_PORT_TYPE_DEAD    = 3,
 } ipc_port_type_t;
+
+#define IPC_PORT_QUEUE_MAX 32
 
 struct ipc_port {
     mach_port_name_t  ip_name;
@@ -26,9 +30,15 @@ struct ipc_port {
     uint32_t          ip_mscount;
     uint32_t          ip_srights;
     void             *ip_kobject;
+    struct ipc_kmsg  *ip_messages[IPC_PORT_QUEUE_MAX];
+    uint32_t          ip_msg_count;
+    uint32_t          ip_msg_first;
+    uint32_t          ip_msg_last;
 };
 
 kern_return_t ipc_port_alloc(ipc_port_t *port_out);
 void          ipc_port_release(ipc_port_t port);
+kern_return_t ipc_port_enqueue(ipc_port_t port, struct ipc_kmsg *kmsg);
+struct ipc_kmsg *ipc_port_dequeue(ipc_port_t port);
 
 #endif /* KERN_IPC_PORT_H */

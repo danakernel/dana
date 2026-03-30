@@ -4,6 +4,7 @@
  */
 
 #include <kern/task.h>
+#include <kern/ipc_space.h>
 
 struct task kernel_task = {
     .task_id      = 0,
@@ -12,6 +13,7 @@ struct task kernel_task = {
     .threads      = THREAD_NULL,
     .itk_self     = IPC_PORT_NULL,
     .thread_count = 0,
+    .itk_space    = IPC_SPACE_NULL,
 };
 
 kern_return_t task_create(task_t parent, bool inherit_memory, task_t *child_out) {

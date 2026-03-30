@@ -51,6 +51,9 @@ SRCS_C  := main.c \
            kern/sched.c \
            kern/clock.c \
            kern/ipc_port.c \
+           kern/ipc_kmsg.c \
+           kern/ipc_space.c \
+           kern/ipc_msg.c \
            libkern/string.c \
            libkern/printf.c \
            vm/pmm.c \
